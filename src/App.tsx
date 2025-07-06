@@ -4,6 +4,7 @@ import Password from "./component/Password";
 import Accounts from "./component/Accounts";
 import { MemoryRouter, Route, Routes, Navigate } from "react-router-dom";
 import "./index.css";
+import Balances from "./component/Balances";
 
 function App() {
   const [vaultExists, setVaultExists] = useState<boolean | null>(null);
@@ -34,7 +35,7 @@ function App() {
           <Route path="/" element={<Mneumonic />} />
           <Route path="/password" element={<Password />} />
           <Route path="/account" element={<Accounts />} />
-          {/* Fallback redirect */}
+          <Route path="/balance" element={<Balances/>} />
           <Route
             path="*"
             element={<Navigate to={vaultExists ? "/password" : "/"} />}

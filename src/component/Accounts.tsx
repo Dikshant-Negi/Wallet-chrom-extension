@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useVault } from "../store/profileSlice";
 import { mnemonicToSeed } from "bip39";
 import { Wallet, HDNodeWallet } from "ethers";
+import { useNavigate } from "react-router-dom";
 function Accounts() {
   const password = useVault((state) => state.password);
   const [accounts, setAccounts] = useState<string[]>([]);
   const [index, setIndex] = useState<number>(0);
-
+  const navigate = useNavigate();
   useEffect(() => {
     loadVaultAndGenerateAccounts();
   }, []);
@@ -60,7 +61,6 @@ function Accounts() {
         const numAccounts = vault.index;
         setIndex(numAccounts);
 
-        // Derive all accounts
         const derived: string[] = [];
         for (let i = 0; i < numAccounts; i++) {
           const address = await getDerivationPath(i, mnemonic);
@@ -76,7 +76,6 @@ function Accounts() {
   const handleAddAccount = () => {
     const newIndex = index + 1;
 
-    // Update index in vault
     chrome.storage.local.get("vault", (result) => {
       const vault = result.vault;
       if (!vault) return;
@@ -99,6 +98,13 @@ function Accounts() {
     return publicKey.address;
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => alert("Address copied to clipboard!"))
+      .catch(() => alert("Failed to copy!"));
+  };
+
   return (
     <div className="accounts-container">
       <div className="accounts-header">
@@ -113,9 +119,25 @@ function Accounts() {
           <p>No accounts found. Add your first account!</p>
         ) : (
           accounts.map((acc, idx) => (
-            <div key={idx} className="account-item">
-              <span>{idx + 1}</span>
-              <code>{truncateText(acc,20,true)}</code>
+            <div
+              key={idx}
+              className="account-item"
+          
+            >
+              <div className=""     onClick={() => navigate(`/balance?key=${acc}`)}>
+              <span>{"Eth"}</span>
+              <code>{truncateText(acc, 20, true)}</code>
+              </div>
+             
+              <button
+                className="copy-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyToClipboard(acc);
+                }}
+              >
+                📋
+              </button>
             </div>
           ))
         )}
@@ -124,7 +146,11 @@ function Accounts() {
   );
 }
 
-function truncateText(text: string, maxLength: number, ellipsis: boolean = true): string {
+function truncateText(
+  text: string,
+  maxLength: number,
+  ellipsis: boolean = true
+): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + (ellipsis ? "..." : "");
 }
